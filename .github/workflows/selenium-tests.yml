@@ -1,28 +1,46 @@
-name: Selenium Java Tests
+name: Selenium UI Tests with Video
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up JDK 19
         uses: actions/setup-java@v4
         with:
-          java-version: '19' # Change this to your project's Java version
+          java-version: '19'
           distribution: 'temurin'
           cache: maven
 
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@latest
+      - name: Install Recording Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg xvfb
 
-      - name: Run Selenium Tests
-        run: mvn clean test
+      - name: Run Tests with Video Recording
+        run: |
+          # 1. Start Xvfb (Virtual Screen)
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+          
+          # 2. Start FFmpeg Recording in the background
+          mkdir -p videos
+          ffmpeg -f x11grab -video_size 1920x1080 -i :99 -codec:v libx264 -pix_fmt yuv420p videos/test-flow.mp4 &
+          FFMPEG_PID=$!
+          
+          # 3. Run your Selenium tests
+          mvn test
+          
+          # 4. Kill FFmpeg gracefully to save the video
+          kill -INT $FFMPEG_PID
+          sleep 2
+
+      - name: Upload Video Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-video
+          path: videos/test-flow.mp4
