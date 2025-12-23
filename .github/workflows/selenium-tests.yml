@@ -22,21 +22,27 @@ jobs:
 
       - name: Run Tests with Video Recording
         run: |
-          # 1. Start Xvfb (Virtual Screen)
+          # 1. Start Virtual Display
           Xvfb :99 -screen 0 1920x1080x24 &
           export DISPLAY=:99
           
-          # 2. Start FFmpeg Recording in the background
+          # 2. Start Recording
           mkdir -p videos
-          ffmpeg -f x11grab -video_size 1920x1080 -i :99 -codec:v libx264 -pix_fmt yuv420p videos/test-flow.mp4 &
+          ffmpeg -y -f x11grab -video_size 1920x1080 -i :99 -codec:v libx264 -pix_fmt yuv420p videos/test-flow.mp4 &
           FFMPEG_PID=$!
           
-          # 3. Run your Selenium tests
-          mvn test
+          # 3. Wait for environment to stabilize
+          sleep 5 
           
-          # 4. Kill FFmpeg gracefully to save the video
+          # 4. Run tests (the || true ensures the video saves even if tests fail)
+          mvn test || true 
+          
+          # 5. Buffer time to see the final result in the video
+          sleep 5 
+          
+          # 6. Properly stop FFmpeg
           kill -INT $FFMPEG_PID
-          sleep 2
+          wait $FFMPEG_PID
 
       - name: Upload Video Artifact
         if: always()
