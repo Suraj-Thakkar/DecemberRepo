@@ -1,0 +1,12 @@
+# Ignore Compiled Java files
+*.class
+target/
+
+# Ignore IDE specific files
+.idea/
+*.iml
+.settings/
+.project/
+
+# Ignore your test screenshots
+screenshots/
