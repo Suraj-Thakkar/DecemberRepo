@@ -1,9 +1,15 @@
-- name: Run Tests with Virtual Display
-  env:
-      # This pulls the secret you saved in GitHub Settings
-      PHONE_NUMBER: ${{ secrets.MY_PHONE_SECRET }}
-  run: |
-      xvfb-run -a --server-args="-screen 0 1920x1080x24" mvn test
+name: Selenium Automation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -21,13 +27,16 @@
           sudo apt-get install -y xvfb libxi6 libgconf-2-4
 
       - name: Run Tests with Virtual Display
+        env:
+          # This pulls the secret you saved in GitHub Settings
+          PHONE_NUMBER: ${{ secrets.MY_PHONE_SECRET }}
         run: |
           # xvfb-run starts a virtual monitor (1920x1080)
-          # Your Java code will record this virtual screen
-          xvfb-run --server-args="-screen 0 1920x1080x24" mvn test
+          # -a finds a free server number automatically
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" mvn test -Djava.awt.headless=false
 
       - name: Upload Screenshots and Videos
-        if: always() # Upload even if tests fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-execution-reports
