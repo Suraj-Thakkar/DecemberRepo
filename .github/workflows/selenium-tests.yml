@@ -4,7 +4,6 @@
       PHONE_NUMBER: ${{ secrets.MY_PHONE_SECRET }}
   run: |
       xvfb-run --server-args="-screen 0 1920x1080x24" mvn test
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
