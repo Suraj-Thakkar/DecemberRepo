@@ -69,6 +69,9 @@ public class LoginFlow {
 
     public void startRecording(String methodName) throws Exception {
         File file = new File("./recordings/");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = screenSize.width;
         int height = screenSize.height;
