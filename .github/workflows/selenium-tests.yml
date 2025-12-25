@@ -1,3 +1,12 @@
+name: Selenium Test Execution
+
+# The "on" section defines what triggers the workflow
+on:
+  push:
+    branches: [ "main" ]    # Runs whenever you push code to main
+  pull_request:
+    branches: [ "main" ]    # Runs whenever you open a PR
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -6,7 +15,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '19'
           distribution: 'temurin'
 
       - name: Install Xvfb
