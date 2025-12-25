@@ -40,17 +40,19 @@ public class LoginFlow {
         options.addArguments("--remote-allow-origins=*");
 
         WebDriver driver = new ChromeDriver(options);
+        driver.manage().window().maximize();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
 
         try {
-            driver.get("https://yogi.web.cashbook.in/login");
+            driver.get("https://test.web.cashbook.in/login");
 
             WebElement phone = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("phoneNumber")));
-            phone.sendKeys("+911000112587");
+            phone.sendKeys("+911231231235");
+            Thread.sleep(5000);
 
-            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@type='submit']"))).click();
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("submitPhoneNumber"))).click();
 
-            WebElement otp = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[type='text']")));
+            WebElement otp = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("code")));
             otp.sendKeys("123456");
 
             wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Verify']"))).click();
