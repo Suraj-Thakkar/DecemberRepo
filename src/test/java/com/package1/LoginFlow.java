@@ -68,9 +68,12 @@ public class LoginFlow {
     // --- DEFINING THE MISSING FUNCTIONS ---
 
     public void startRecording(String methodName) throws Exception {
-        File file = new File("./recordings/");
+        String folderPath = System.getProperty("user.dir") + File.separator + "recordings";
+        File file = new File(folderPath);
+
         if (!file.exists()) {
-            file.mkdirs();
+            file.mkdirs(); // This creates the 'recordings' folder if it's missing
+            System.out.println("Created directory: " + file.getAbsolutePath());
         }
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = screenSize.width;
