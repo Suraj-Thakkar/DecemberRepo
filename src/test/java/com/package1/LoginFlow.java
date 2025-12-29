@@ -70,34 +70,30 @@ public class LoginFlow {
     // --- DEFINING THE MISSING FUNCTIONS ---
 
     public void startRecording(String methodName) throws Exception {
-        String folderPath = System.getProperty("user.dir") + File.separator + "recordings";
-        File file = new File(folderPath);
+        File file = new File(System.getProperty("user.dir") + File.separator + "recordings");
+        if (!file.exists()) file.mkdirs();
 
-        if (!file.exists()) {
-            file.mkdirs(); // This creates the 'recordings' folder if it's missing
-            System.out.println("Created directory: " + file.getAbsolutePath());
-        }
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = screenSize.width;
-        int height = screenSize.height;
-
-        Rectangle captureSize = new Rectangle(0, 0, width, height);
+        Rectangle captureSize = new Rectangle(0, 0, screenSize.width, screenSize.height);
 
         GraphicsConfiguration gc = GraphicsEnvironment
                 .getLocalGraphicsEnvironment()
                 .getDefaultScreenDevice()
                 .getDefaultConfiguration();
 
-        this.screenRecorder = new ScreenRecorder(gc, captureSize,
-                new Format(MediaTypeKey, MediaType.FILE, MimeTypeKey, MIME_AVI),
-                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, ENCODING_AVI_TECHSMITH_SCREEN_CAPTURE,
-                        CompressorNameKey, ENCODING_AVI_TECHSMITH_SCREEN_CAPTURE, DepthKey, 24, FrameRateKey,
-                        Rational.valueOf(15), QualityKey, 1.0f, KeyFrameIntervalKey, 15 * 60),
-                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, "black", FrameRateKey, Rational.valueOf(30)),
-                null, file);
+        this.screenRecorder = new SpecializedScreenRecorder(gc, captureSize,
+                // Use QuickTime MIME type
+                new Format(MediaTypeKey, MediaType.FILE, MimeTypeKey, MIME_QUICKTIME),
+                // Use standard Video format settings
+                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, ENCODING_QUICKTIME_ANIMATION,
+                        CompressorNameKey, ENCODING_QUICKTIME_ANIMATION,
+                        DepthKey, 24, FrameRateKey, Rational.valueOf(15),
+                        QualityKey, 1.0f, KeyFrameIntervalKey, 15 * 60),
+                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, "black",
+                        FrameRateKey, Rational.valueOf(30)),
+                null, file, methodName);
 
         this.screenRecorder.start();
-        System.out.println("Recording started...");
     }
 
     public void stopRecording() throws Exception {
@@ -110,5 +106,25 @@ public class LoginFlow {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         FileUtils.copyFile(scrFile, new File("./screenshots/" + fileName + "_" + timestamp + ".png"));
         System.out.println("Screenshot saved.");
+    }
+}
+class SpecializedScreenRecorder extends ScreenRecorder {
+    private String name;
+
+    public SpecializedScreenRecorder(GraphicsConfiguration cfg, Rectangle captureArea, Format fileFormat,
+                                     Format screenFormat, Format mouseFormat, Format audioFormat, File movieFolder, String name)
+            throws IOException, AWTException {
+        super(cfg, captureArea, fileFormat, screenFormat, mouseFormat, audioFormat, movieFolder);
+        this.name = name;
+    }
+
+    @Override
+    protected File createMovieFile(Format fileFormat) throws IOException {
+        if (!movieFolder.exists()) {
+            movieFolder.mkdirs();
+        }
+        // Explicitly naming the file .mp4
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        return new File(movieFolder, name + "_" + dateFormat.format(new Date()) + ".mp4");
     }
 }
